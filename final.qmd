@@ -1,0 +1,70 @@
+---
+title: "NYCTaxi"
+author: "김승현(202021304)"
+format: dashboard
+execute: 
+  enabled: true
+  cache: false
+  freeze: false
+  error: true
+---
+```{python}
+#| output: false
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+pd.options.plotting.backend = "plotly"
+pio.templates.default = "plotly_white"
+
+df = pd.read_csv("https://raw.githubusercontent.com/guebin/DV2023/main/posts/NYCTaxi.csv").assign(
+    log_trip_duration=lambda df: np.log(df.trip_duration),
+    pickup_datetime=lambda df: df.pickup_datetime.apply(pd.to_datetime),
+    dropoff_datetime=lambda df: df.dropoff_datetime.apply(pd.to_datetime),
+    dist=lambda df: np.sqrt(
+        (df.pickup_latitude - df.dropoff_latitude) ** 2
+        + (df.pickup_longitude - df.dropoff_longitude) ** 2
+    ),
+    # --- #
+    vendor_id=lambda df: df.vendor_id.map({1: "A", 2: "B"}),
+)
+
+df = df.assign(
+    speed=lambda df: df.dist / df.trip_duration,
+    pickup_hour=lambda df: df.pickup_datetime.dt.hour,
+    dropoff_hour=lambda df: df.dropoff_datetime.dt.hour,
+    dayofweek=lambda df: df.pickup_datetime.dt.dayofweek,
+)
+
+df_small = df[::100].reset_index(drop=True)
+
+day_map = {0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun"}
+df_small["dayofweek"] = df_small["dayofweek"].map(day_map)
+
+# Calculate average speed
+avg_speed_by_day_time = (
+    df_small.groupby(["dayofweek", "pickup_hour"])["speed"]
+    .mean()
+    .reset_index()
+)
+
+fig = px.line(
+    avg_speed_by_day_time,
+    x="pickup_hour",
+    y="speed",
+    color="dayofweek",
+    title="Average Speed by Day of Week and Time of Day",
+    labels={
+        "pickup_hour": "Pickup Hour",
+        "speed": "Average Speed (km/h)",
+        "dayofweek": "Day of Week",
+    },
+)
+```
+# 기말고사1-(1),(2)
+
+```{python}
+#| title: 요일,시간에 따른 평균속력 시각화        
+fig.show()
+```
