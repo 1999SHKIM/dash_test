@@ -6,7 +6,6 @@ execute:
   enabled: true
   cache: false
   freeze: false
-  error: true
 ---
 ```{python}
 #| output: false
@@ -30,6 +29,7 @@ df = pd.read_csv("https://raw.githubusercontent.com/guebin/DV2023/main/posts/NYC
     vendor_id=lambda df: df.vendor_id.map({1: "A", 2: "B"}),
 )
 
+# Calculate additional attributes
 df = df.assign(
     speed=lambda df: df.dist / df.trip_duration,
     pickup_hour=lambda df: df.pickup_datetime.dt.hour,
@@ -37,9 +37,11 @@ df = df.assign(
     dayofweek=lambda df: df.pickup_datetime.dt.dayofweek,
 )
 
+# Reduce data size for faster processing
 df_small = df[::100].reset_index(drop=True)
 
-day_map = {0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun"}
+# Convert day of week
+day_map = {0: "월", 1: "화", 2: "수", 3: "목", 4: "금", 5: "토", 6: "일"}
 df_small["dayofweek"] = df_small["dayofweek"].map(day_map)
 
 # Calculate average speed
@@ -49,7 +51,7 @@ avg_speed_by_day_time = (
     .reset_index()
 )
 
-
+# Line chart visualization
 fig1 = px.line(
     avg_speed_by_day_time,
     x="pickup_hour",
@@ -67,6 +69,9 @@ avg_distance_by_hour = (
     df_small.groupby("pickup_hour")["dist"]
     .mean()
     .reset_index()
+)
+
+# Line chart visualization
 fig2 = px.line(
     avg_distance_by_hour,
     x="pickup_hour",
@@ -86,33 +91,15 @@ fig2 = px.line(
 
 ```{python}
 #| title: 요일,시간에 따른 평균속력 시각화        
-fig1 = px.line(
-    avg_speed_by_day_time,
-    x="pickup_hour",
-    y="speed",
-    color="dayofweek",
-    title="Average Speed by Day of Week and Time of Day",
-    labels={
-        "pickup_hour": "Pickup Hour",
-        "speed": "Average Speed (km/h)",
-        "dayofweek": "Day of Week",
-    },
-)
+
 fig1.show()
+
 ```
 ## Column {width=50%}
 
 ```{python}
 #| title: 요일,시간에 따른 평균이동거리 시각화        
-fig2 = px.line(
-    avg_distance_by_hour,
-    x="pickup_hour",
-    y="dist",
-    title="Average Distance by Time of Day",
-    labels={
-        "pickup_hour": "Pickup Hour",
-        "dist": "Average Distance (km)",
-    },
-)
+
 fig2.show()
+
 ```
