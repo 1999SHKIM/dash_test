@@ -86,11 +86,33 @@ fig2 = px.line(
 
 ```{python}
 #| title: 요일,시간에 따른 평균속력 시각화        
+fig1 = px.line(
+    avg_speed_by_day_time,
+    x="pickup_hour",
+    y="speed",
+    color="dayofweek",
+    title="Average Speed by Day of Week and Time of Day",
+    labels={
+        "pickup_hour": "Pickup Hour",
+        "speed": "Average Speed (km/h)",
+        "dayofweek": "Day of Week",
+    },
+)
 fig1.show()
 ```
 ## Column {width=50%}
 
 ```{python}
 #| title: 요일,시간에 따른 평균이동거리 시각화        
+fig2 = px.line(
+    avg_distance_by_hour,
+    x="pickup_hour",
+    y="dist",
+    title="Average Distance by Time of Day",
+    labels={
+        "pickup_hour": "Pickup Hour",
+        "dist": "Average Distance (km)",
+    },
+)
 fig2.show()
 ```
