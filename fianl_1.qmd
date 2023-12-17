@@ -6,6 +6,7 @@ execute:
   enabled: true
   cache: false
   freeze: false
+  error: true
 ---
 ```{python}
 #| output: false
@@ -74,16 +75,4 @@ fig.show()
 ```{python}
 #| title: 요일,시간에 따른 평균속력 시각화        
 fig.show()
-```
-
-```{python}
-#| title: 요일,시간에 따른 평균이동거리 시각화        
-#fig2.show()
-```
-
-# 기말고사1-(3)
-
-```{python}
-#| title: 속력별 경로 시각화
-#fig3.show()
 ```
