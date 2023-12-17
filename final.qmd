@@ -49,7 +49,8 @@ avg_speed_by_day_time = (
     .reset_index()
 )
 
-fig = px.line(
+
+fig1 = px.line(
     avg_speed_by_day_time,
     x="pickup_hour",
     y="speed",
@@ -61,10 +62,30 @@ fig = px.line(
         "dayofweek": "Day of Week",
     },
 )
+# Calculate average distance
+avg_distance_by_hour = (
+    df_small.groupby("pickup_hour")["dist"]
+    .mean()
+    .reset_index()
+fig2 = px.line(
+    avg_distance_by_hour,
+    x="pickup_hour",
+    y="dist",
+    title="Average Distance by Time of Day",
+    labels={
+        "pickup_hour": "Pickup Hour",
+        "dist": "Average Distance (km)",
+    },
+)
 ```
 # 기말고사1-(1),(2)
 
 ```{python}
 #| title: 요일,시간에 따른 평균속력 시각화        
-fig.show()
+fig1.show()
+```
+
+```{python}
+#| title: 요일,시간에 따른 평균이동거리 시각화        
+fig2.show()
 ```
