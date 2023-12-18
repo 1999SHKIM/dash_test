@@ -1,12 +1,13 @@
 ---
 title: "NYCTaxi"
-author: "김승현(202021304)"
+author: "최규빈"
 format: dashboard
 execute: 
   enabled: true
   cache: false
   freeze: false
 ---
+
 ```{python}
 #| output: false
 import numpy as np
@@ -21,86 +22,57 @@ pd.options.plotting.backend = "plotly"
 pio.templates.default = "plotly_white"
 
 df = pd.read_csv("https://raw.githubusercontent.com/guebin/DV2023/main/posts/NYCTaxi.csv").assign(
-    log_trip_duration=lambda df: np.log(df.trip_duration),
-    pickup_datetime=lambda df: df.pickup_datetime.apply(pd.to_datetime),
-    dropoff_datetime=lambda df: df.dropoff_datetime.apply(pd.to_datetime),
-    dist=lambda df: np.sqrt(
-        (df.pickup_latitude - df.dropoff_latitude) ** 2
-        + (df.pickup_longitude - df.dropoff_longitude) ** 2
-    ),
-    # --- #
-    vendor_id=lambda df: df.vendor_id.map({1: "A", 2: "B"}),
+    log_trip_duration = lambda df: np.log(df.trip_duration),
+    pickup_datetime = lambda df: df.pickup_datetime.apply(pd.to_datetime),
+    dropoff_datetime = lambda df: df.dropoff_datetime.apply(pd.to_datetime),
+    dist = lambda df: np.sqrt((df.pickup_latitude-df.dropoff_latitude)**2 + (df.pickup_longitude-df.dropoff_longitude)**2),
+    #---#
+    vendor_id = lambda df: df.vendor_id.map({1:'A',2:'B'})
+).assign(
+    speed = lambda df: df.dist / df.trip_duration,
+    pickup_hour = lambda df: df.pickup_datetime.dt.hour,
+    dropoff_hour = lambda df: df.dropoff_datetime.dt.hour,
+    dayofweek = lambda df: df.pickup_datetime.dt.dayofweek
 )
-
-# Calculate additional attributes
-df = df.assign(
-    speed=lambda df: df.dist / df.trip_duration,
-    pickup_hour=lambda df: df.pickup_datetime.dt.hour,
-    dropoff_hour=lambda df: df.dropoff_datetime.dt.hour,
-    dayofweek=lambda df: df.pickup_datetime.dt.dayofweek,
-)
-
-# Reduce data size for faster processing
 df_small = df[::100].reset_index(drop=True)
 
-# Convert day of week
-day_map = {0: "월", 1: "화", 2: "수", 3: "목", 4: "금", 5: "토", 6: "일"}
-df_small["dayofweek"] = df_small["dayofweek"].map(day_map)
+week_k = {0:'월',1:'화',2:'수',3:'목',4:'금',5:'토',6:'일'}
+df["dayofweek"] = df["dayofweek"].map(week_k)
 
-# Calculate average speed
-avg_speed_by_day_time = (
-    df_small.groupby(["dayofweek", "pickup_hour"])["speed"]
-    .mean()
-    .reset_index()
-)
+tidydata = df.pivot_table(
+    index = 'pickup_hour',
+    columns = 'dayofweek',
+    values = 'speed',
+    aggfunc = 'mean'
+).stack().reset_index().rename({0:'speed_mean'},axis=1)
 
-# Line chart visualization
-fig1 = px.line(
-    avg_speed_by_day_time,
-    x="pickup_hour",
-    y="speed",
-    color="dayofweek",
-    title="Average Speed by Day of Week and Time of Day",
-    labels={
-        "pickup_hour": "Pickup Hour",
-        "speed": "Average Speed (km/h)",
-        "dayofweek": "Day of Week",
-    },
+fig1 =px.density_heatmap(
+    data_frame=tidydata,
+    x='pickup_hour',
+    y='dayofweek',
+    z='speed_mean',
+    nbinsx=24,
+    nbinsy=7,
+    height=300,
+    labels={"pickup_hour": "탑승시간", "dayofweek": "요일"}
 )
-# Calculate average distance
-avg_distance_by_hour = (
-    df_small.groupby("pickup_hour")["dist"]
-    .mean()
-    .reset_index()
-)
-
-# Line chart visualization
-fig2 = px.line(
-    avg_distance_by_hour,
-    x="pickup_hour",
-    y="dist",
-    title="Average Distance by Time of Day",
-    labels={
-        "pickup_hour": "Pickup Hour",
-        "dist": "Average Distance (km)",
-    },
-)
+    
 ```
 
-# 기말고사1-(1)
-
-
+# 기말고사1-(1),(2)
 
 ```{python}
 #| title: 요일,시간에 따른 평균속력 시각화        
-
 fig1.show()
-
 ```
 
 ```{python}
 #| title: 요일,시간에 따른 평균이동거리 시각화        
 
-fig2.show()
+```
 
+# 기말고사1-(3)
+
+```{python}
+#| title: 속력별 경로 시각화
 ```
