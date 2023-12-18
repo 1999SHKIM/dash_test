@@ -54,9 +54,25 @@ fig1 =px.density_heatmap(
     nbinsx=24,
     nbinsy=7,
     height=300,
-    labels={"pickup_hour": "탑승시간", "dayofweek": "요일"}
+    labels={"pickup_hour": "탑승시간", "dayofweek": "요일", 'speed_mean':'평균속도'}
 )
-    
+
+tidydata = df.pivot_table(
+    index = 'pickup_hour',
+    columns = 'dayofweek',
+    values = 'dist',
+    aggfunc = 'mean'
+).stack().reset_index().rename({0:'dist_mean'},axis=1)
+fig2=px.density_heatmap(
+    data_frame=tidydata,
+    x='pickup_hour',
+    y='dayofweek',
+    z='dist_mean',
+    nbinsx=24,
+    nbinsy=7,
+    height=300,
+    labels={"pickup_hour": "탑승시간", "dayofweek": "요일", 'dist_mean':'평균이동거리'}
+)
 ```
 
 # 기말고사1-(1),(2)
@@ -64,11 +80,12 @@ fig1 =px.density_heatmap(
 ```{python}
 #| title: 요일,시간에 따른 평균속력 시각화        
 fig1.show()
+
 ```
 
 ```{python}
 #| title: 요일,시간에 따른 평균이동거리 시각화        
-
+fig2.show()
 ```
 
 # 기말고사1-(3)
